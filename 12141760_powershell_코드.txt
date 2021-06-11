@@ -1,0 +1,203 @@
+mysql> create database MOVIES
+    -> ;
+Query OK, 1 row affected (0.01 sec)
+
+mysql> show databases;
++--------------------+
+| Database           |
++--------------------+
+| MOVIES             |
+| information_schema |
+| movies01           |
+| mysql              |
+| performance_schema |
+| sys                |
+| testdb             |
++--------------------+
+7 rows in set (0.00 sec)
+
+mysql> use MOVIES
+Database changed
+mysql> create table ACTOR
+    -> (IDNum int not null,
+    -> Name VARCHAR(45) NOT NULL,
+    -> WinAward INT ,
+    -> PRIMARY KEY (IDNum))
+    -> ENGINE = MEMORY;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> CREATE TABLE DIRECTOR
+    -> ( IDNum INT NOT NULL,
+    -> Name VARCHAR(45) NOT NULL,
+    -> PRIMARY KEY (IDNum))
+    -> ENGINE=MEMORY;
+Query OK, 0 rows affected (0.00 sec)
+    ->  
+mysql> CREATE TABLE MOVIE (
+    ->  Movie_IDNum INT NOT NULL,
+    ->  Title VARCHAR(45) NOT NULL,
+    ->  Genre CHAR(20) NOT NULL,
+    ->  Runningtime INT NOT NULL,
+    ->   DIRECTOR_IDNum INT NOT NULL,
+    ->   PRODUCER_IDNum INT NOT NULL,
+    ->  PRIMARY KEY (Movie_IDNum),
+    ->  CONSTRAINT fk_MOVIE_DIRECTOR
+    ->  FOREIGN KEY (DIRECTOR_IDNum)
+    ->  REFERENCES DIRECTOR (IDNum)
+    ->  ON DELETE SET NULL
+    ->  ON UPDATE CASCADE,
+    ->  CONSTRAINT fk_MOVIE_PRODUCER
+    ->   FOREIGN KEY (PRODUCER_IDNum)
+    ->  REFERENCES PRODUCER (IDNum)
+    ->  ON DELETE SET NULL
+    ->  ON UPDATE CASCADE)
+    ->  ENGINE = MEMORY;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> CREATE TABLE  PERFORMS_IN(
+    ->   ACTOR_IDNum INT NOT NULL,
+    ->   MOVIE_Movie_IDNum INT NOT NULL,
+    ->   CONSTRAINT fk_TO_ACTOR
+    ->     FOREIGN KEY (ACTOR_IDNum)
+    ->     REFERENCES ACTOR (IDNum)
+    ->     ON DELETE SET NULL ON UPDATE CASCADE,
+    ->   CONSTRAINT fk_TO_MOVIE
+    ->     FOREIGN KEY (MOVIE_Movie_IDNum)
+    ->     REFERENCES MOVIE (Movie_IDNum)
+    ->     ON DELETE SET NULL ON UPDATE CASCADE)
+    -> ENGINE = MEMORY;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> CREATE TABLE LEAD_ROLE (
+    ->   ACTOR_IDNum INT NULL,
+    ->   MOVIE_Movie_IDNum INT NOT NULL,
+    ->   CONSTRAINT fk_LEAD_TO_ACTOR
+    ->     FOREIGN KEY (ACTOR_IDNum)
+    ->     REFERENCES ACTOR (IDNum)
+    ->     ON DELETE SET NULL ON UPDATE CASCADE,
+    ->   CONSTRAINT fk_LEAD_TO_MOVIE
+    ->     FOREIGN KEY (MOVIE_Movie_IDNum)
+    ->     REFERENCES MOVIE (Movie_IDNum)
+    ->     ON DELETE SET NULL ON UPDATE CASCADE)
+    -> ENGINE = MEMORY;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> CREATE INDEX ACTOR_idx1 on ACTOR (IDNum) using HASH;
+Query OK, 0 rows affected (0.02 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> CREATE INDEX DIRECTOR_idx1 on DIRECTOR (IDNUM) using HASH;
+Query OK, 0 rows affected (0.02 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> CREATE INDEX MOVIE_idx1 on MOVIE (MOVIE_IDNum) using HASH;
+Query OK, 0 rows affected (0.02 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> CREATE INDEX MOVIE_idx2 on MOVIE (Runningtime) using BTREE;
+Query OK, 0 rows affected (0.02 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> CREATE INDEX PRODUCER_idx1 on PRODUCER (IDNum) using HASH;
+Query OK, 0 rows affected (0.02 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> CREATE VIEW Who_takes_lead_role as
+    -> select B.Title, A.IDNum, A.Name
+    -> from ACTOR AS A, MOVIE AS B, LEAD_ROLE AS C
+    -> WHERE A.IDNum=C.ACTOR_IDNum
+    -> AND B.Movie_IDNum=C.MOVIE_Movie_IDNum
+    -> ORDER BY B.Title;
+Query OK, 0 rows affected (0.01 sec)
+
+insert into ACTOR (IDNum, Name) values
+    -> (1,'Kim'),
+    -> (2,'Lee'),
+    -> (3,'Park'),
+    -> (4,'Choi'),
+    -> (5,'Jeong');
+Query OK, 5 rows affected (0.01 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+mysql> insert into DIRECTOR (IDNum, Name) values
+    -> (1, 'Nolan'),
+    -> (2, 'Catherin'),
+    -> (3, 'Oliver'),
+    -> (4, 'James'),
+    -> (5, 'Jack');
+Query OK, 5 rows affected (0.00 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+mysql> Insert into MOVIE (MOVIE_IDNum, Title, Genre, Runningtime, DIRECTOR_IDNum, PRODUCER_IDNum) values 
+    -> (1, 'A good thing', 'Comedy', 11, 1, 2),
+    -> (2, 'Never Ending Story', 'Drama', 70, 2, 4),   
+    -> (3, 'Zootopia', 'Animation', 91, 2 ,5),
+    -> (4, 'Blind Side', 'Documentary', 101, 1, 5),
+    -> (5, 'Mission Impossible', 'Action', 121, 5, 4),
+    -> (6, 'Interstella', 'SF', 181, 2, 3),
+    -> (7, 'Cube', 'Horror', 100, 4, 5),
+    -> (8, 'Merry Christmas', 'Romance', 97, 2, 5),
+    -> (9, 'Happy New year', 'Family', 123, 1, 3),
+    -> (10, 'Home Alone', 'Comedy', 112, 4, 2);
+Query OK, 10 rows affected (0.00 sec)
+Records: 10  Duplicates: 0  Warnings: 0
+
+mysql> insert into PRODUCER (IDNum, Name) values
+    -> (1, 'Yoo'),
+    -> (2, 'Richard'),
+    -> (3, 'Wolfgang'),
+    -> (4, 'Steven'),
+    -> (5, 'Wang');
+Query OK, 5 rows affected (0.01 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+mysql> insert into PERFORMS_IN (ACTOR_IDNum, MOVIE_Movie_IDNum) values
+    -> (1,4),
+    -> (2,3),
+    -> (3,1),
+    -> (5,2),
+    -> (4,5),
+    -> (1,3),
+    -> (2,5),
+    -> (1,1),
+    -> (1,2),
+    -> (1,5),
+    -> (1,6)
+    -> (1,7)
+    -> (1,8)
+    -> (1,9)
+    -> (1,10);
+Query OK, 15 rows affected (0.01 sec)
+Records: 15  Duplicates: 0  Warnings: 0
+
+mysql> insert into LEAD_ROLE (ACTOR_IDNum, MOVIE_Movie_IDNum) values
+    -> (1, 2),
+    -> (2, 4),
+    -> (3, 5),
+    -> (5, 3),
+    -> (1, 1),
+    -> (1, 3),
+    -> (1, 4),
+    -> (1, 5),
+    -> (1, 6),
+    -> (1, 7),
+    -> (1, 8),
+    -> (1, 9)
+    -> (1, 10);
+Query OK, 13 rows affected (0.01 sec)
+Records: 13  Duplicates: 0  Warnings: 0
+
+mysql> delimiter //
+mysql> create trigger Lead_Role_Violation
+    -> before insert on LEAD_ROLE
+    -> for each row
+    -> begin
+    -> set @numof_leadrole = (SELECT COUNT(*) FROM LEAD_ROLE WHERE MOVIE_Movie_IDNum=NEW.MOVIE_Movie_IDNum);
+    -> if @numof_leadrole > 1 then
+    -> SIGNAL SQLSTATE '45000'
+    -> SET MESSAGE_TEXT = 'A movie can have only a maximum of two lead actors';
+    -> end if;
+    -> end; //
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> delimiter ;
